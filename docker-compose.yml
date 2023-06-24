@@ -1,0 +1,51 @@
+version: '3'
+services:
+  produtor:
+    build:
+      context: .
+      dockerfile: Dockerfile.produtor
+    restart: always
+    depends_on:
+      - rabbitmq
+    networks:
+      - mynet
+
+  rabbitmq:
+    build:
+      context: .
+      dockerfile: Dockerfile.rabbitmq
+    restart: always
+    ports:
+      - 5672:5672
+      - 15672:15672
+    networks:
+      - mynet
+
+  consumidor:
+    build:
+      context: .
+      dockerfile: Dockerfile.consumidor
+    restart: always
+    depends_on:
+      - rabbitmq
+      - db
+    networks:
+      - mynet
+
+  db:
+    build:
+      context: .
+      dockerfile: Dockerfile.mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: banco_de_ip
+    ports:
+      - 3306:3306
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - mynet
+
+networks:
+  mynet:
